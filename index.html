@@ -469,20 +469,29 @@ const DEMO_CON = [
 
 // ── CSV PARSER ───────────────────────────────
 function parsearCSV(texto) {
-  const lineas = texto.trim().split("\n");
-  if (lineas.length < 2) return [];
-  const headers = lineas[0].split(",").map(h => h.replace(/"/g, "").trim().toLowerCase().replace(/\s+/g, ""));
-  return lineas.slice(1).map(linea => {
-    const vals = [];
-    let cur = "", enComilla = false;
-    for (let c of linea) {
-      if (c === '"') enComilla = !enComilla;
-      else if (c === "," && !enComilla) { vals.push(cur); cur = ""; }
-      else cur += c;
+  const rows = [];
+  let cur = "", enComilla = false, fila = [];
+  for (let i = 0; i < texto.length; i++) {
+    const c = texto[i];
+    if (c === '"') {
+      if (enComilla && texto[i+1] === '"') { cur += '"'; i++; }
+      else enComilla = !enComilla;
+    } else if (c === ',' && !enComilla) {
+      fila.push(cur); cur = "";
+    } else if (c === '\n' && !enComilla) {
+      fila.push(cur); cur = "";
+      if (fila.some(f => f.trim())) rows.push(fila);
+      fila = [];
+    } else if (c !== '\r') {
+      cur += c;
     }
-    vals.push(cur);
+  }
+  if (cur || fila.length) { fila.push(cur); if (fila.some(f => f.trim())) rows.push(fila); }
+  if (rows.length < 2) return [];
+  const headers = rows[0].map(h => h.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g,""));
+  return rows.slice(1).map(vals => {
     const obj = {};
-    headers.forEach((h, i) => { obj[h] = (vals[i] || "").replace(/"/g, "").trim(); });
+    headers.forEach((h, i) => { obj[h] = (vals[i] || "").trim(); });
     return obj;
   });
 }
