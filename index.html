@@ -184,7 +184,6 @@
       margin-bottom: 14px;
       overflow: hidden;
       transition: box-shadow 0.2s;
-      cursor: pointer;
     }
     .card:hover { box-shadow: 0 2px 12px rgba(55,48,163,0.08); }
     .card.open { box-shadow: 0 4px 20px rgba(55,48,163,0.12); }
@@ -199,6 +198,8 @@
       display: flex;
       align-items: flex-start;
       gap: 12px;
+      cursor: pointer;
+      user-select: none;
     }
     .card-meta {
       flex: 1;
@@ -629,7 +630,13 @@ function renderLista() {
   const cat = document.getElementById("filtro-cat").value || "Todas";
   const lista = document.getElementById("lista");
 
-  let items = estado.tab === "resoluciones" ? estado.resoluciones : estado.consultas;
+  let items = [...(estado.tab === "resoluciones" ? estado.resoluciones : estado.consultas)];
+  if (estado.tab === "resoluciones") {
+    items.sort((a, b) => {
+      const num = t => { const m = (t||"").match(/(\d{4})-(\d{4,5})/); return m ? parseInt(m[1])*100000+parseInt(m[2]) : 0; };
+      return num(b.titulo) - num(a.titulo);
+    });
+  }
 
   items = items.filter(item => {
     const matchQ = !q || (item.titulo || "").toLowerCase().includes(q) || (item.resumen || "").toLowerCase().includes(q) || (item.tema || "").toLowerCase().includes(q);
@@ -659,7 +666,7 @@ function renderLista() {
 
     return `
       <div class="card ${claseBase} ${claseUrgBorde} ${abierto ? "open" : ""}" onclick="toggleCard('${item.id}')">
-        <div class="card-head">
+        <div class="card-head" onclick="toggleCard('${item.id}')">
           <div class="card-meta">
             <div class="card-chips">
               ${chipUrg}${chipCat}${chipTema}${chipFecha}
