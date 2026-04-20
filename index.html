@@ -595,6 +595,14 @@ function renderResumen(texto) {
     const html = l.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
     return `<p>${html}</p>`;
   }).join("");
+
+  // Event listeners para abrir/cerrar cards
+  lista.querySelectorAll(".card-head").forEach(head => {
+    head.addEventListener("click", function() {
+      const card = this.closest("[data-id]");
+      if (card) toggleCard(card.dataset.id);
+    });
+  });
 }
 
 function actualizarUI() {
@@ -666,7 +674,7 @@ function renderLista() {
 
     return `
       <div class="card ${claseBase} ${claseUrgBorde} ${abierto ? "open" : ""}" data-id="${item.id}">
-        <div class="card-head" onclick="var c=this.closest('[data-id]');if(c)toggleCard(c.dataset.id)">
+        <div class="card-head">
           <div class="card-meta">
             <div class="card-chips">
               ${chipUrg}${chipCat}${chipTema}${chipFecha}
@@ -682,6 +690,14 @@ function renderLista() {
       </div>
     `;
   }).join("");
+
+  // Event listeners para abrir/cerrar cards
+  lista.querySelectorAll(".card-head").forEach(head => {
+    head.addEventListener("click", function() {
+      const card = this.closest("[data-id]");
+      if (card) toggleCard(card.dataset.id);
+    });
+  });
 }
 
 function toggleCard(id) {
